@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/lpraz/time-from/issues"
   },
-  "homepage": "https://github.com/lpraz/time-from#readme"
+  "homepage": "https://github.com/lpraz/time-from#readme",
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "cssnano": "^4.1.10"
+  }
 }
