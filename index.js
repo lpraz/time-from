@@ -41,10 +41,26 @@ const diffTime = (src, dest) => {
     return { count, years, days, hours, minutes, seconds };
 };
 
+const display = state => {
+    console.log(state);
+    return {
+    currentTime: Date.now(),
+    targetTime: Date.UTC(
+        state.newTime.year,
+        state.newTime.month - 1,
+        state.newTime.day,
+        state.newTime.hours,
+        state.newTime.minutes,
+        state.newTime.seconds),
+    event: state.newTime.event}
+};
+
+const If = (pred, view) => pred ? view : "";
+
 const Display = state => {
-    const displayUnit = (amount, unit) => amount > 0 ? (
+    const displayUnit = (amount, unit) => If(amount > 0, (
         <p><strong>{amount}</strong> {unit}{amount > 1 ? "s" : ""}</p>
-    ) : "";
+    ));
 
     let diff = diffTime(state.currentTime, state.targetTime);
     return (
@@ -59,16 +75,38 @@ const Display = state => {
     )
 };
 
+// TODO: UTC/local selection
+// TODO: 12h/24h selection
 const Create = state => (
-    <p>Create</p>
+    <div>
+        <p>Count to</p>
+        <input value={state.newTime.hours}></input>:
+        <input value={state.newTime.minutes}></input>:
+        <input value={state.newTime.seconds}></input>,
+        <input value={state.newTime.month}></input>
+        <input value={state.newTime.day}></input>,
+        <input value={state.newTime.year}></input>
+        <p>when</p>
+        <textarea value={state.newTime.event}></textarea>
+        <p>occurs</p>
+        <button onclick={display}>Count!</button>
+    </div>
 );
 
 app({
     init: () => ({
         currentTime: Date.now(),
         targetTime: getQueryParams().get("time"),
-        event: getQueryParams().get("event")
+        event: getQueryParams().get("event"),
+        newTime: {
+            year: new Date().getUTCFullYear(),
+            month: new Date().getUTCMonth() + 1,
+            day: new Date().getUTCDate(),
+            hours: new Date().getUTCHours(),
+            minutes: new Date().getUTCMinutes(),
+            seconds: new Date().getUTCSeconds()
+        }
     }),
-    view: state => state.time !== null ? Display(state) : Create(state),
+    view: state => state.targetTime === null ? Create(state) : Display(state),
     node: document.getElementById("app")
 });
