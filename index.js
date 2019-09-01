@@ -1,11 +1,24 @@
-import { h, app } from "hyperapp"
+import { h, app } from 'hyperapp'
+
+const getQueryParams = () =>
+    new URLSearchParams(window.location.search.substr(1));
+
+const Display = state => (
+    <div>
+        <h1>Some time</h1>
+        <p>until {state.event}</p>
+    </div>
+);
+
+const Create = state => (
+    <p>Create</p>
+);
 
 app({
-    init: "Hello, world!",
-    view: state => (
-        <div>
-            <p>{state}</p>
-        </div>
-    ),
+    init: () => ({
+        time: getQueryParams().get("time"),
+        event: getQueryParams().get("event")
+    }),
+    view: state => state.time !== null ? Display(state) : Create(state),
     node: document.getElementById("app")
-})
+});
