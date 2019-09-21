@@ -1,4 +1,5 @@
-import { h, app } from 'hyperapp'
+import { h, app } from "hyperapp"
+import { interval } from "@hyperapp/time"
 
 const getQueryParams = () =>
     new URLSearchParams(window.location.search.substr(1));
@@ -41,9 +42,7 @@ const diffTime = (src, dest) => {
     return { count, years, days, hours, minutes, seconds };
 };
 
-const display = state => {
-    console.log(state);
-    return {
+const toDisplay = state => ({
     currentTime: Date.now(),
     targetTime: Date.UTC(
         state.newTime.year,
@@ -52,8 +51,13 @@ const display = state => {
         state.newTime.hours,
         state.newTime.minutes,
         state.newTime.seconds),
-    event: state.newTime.event}
-};
+    event: state.newTime.event
+});
+
+const Tick = (state, time) => ({
+    ...state,
+    currentTime: time
+});
 
 const If = (pred, view) => pred ? view : "";
 
@@ -89,7 +93,7 @@ const Create = state => (
         <p>when</p>
         <textarea value={state.newTime.event}></textarea>
         <p>occurs</p>
-        <button onclick={display}>Count!</button>
+        <button onclick={toDisplay}>Count!</button>
     </div>
 );
 
@@ -108,5 +112,11 @@ app({
         }
     }),
     view: state => state.targetTime === null ? Create(state) : Display(state),
+    subscriptions: state => [
+        state.targetTime !== null &&
+            interval(Tick, {
+                delay: 1000
+            })
+    ],
     node: document.getElementById("app")
 });
