@@ -73,6 +73,7 @@ const Display = state => {
 
     return (
         <div>
+            <p>{diff.count == "down" ? "There are" : "It has been"}</p>
             {displayUnit(diff.years, "year")}
             {displayUnit(diff.days, "day")}
             {displayUnit(diff.hours, "hour")}
@@ -86,19 +87,22 @@ const Display = state => {
 
 // TODO: UTC/local selection
 // TODO: 12h/24h selection
+// TODO: fix state.newTime.* binding
+// TODO: left-pad numbers (16:3:5 => 16:03:05)
+// TODO: month <select>
 const Create = state => (
     <div>
-        <p>Count to</p>
-        <input value={state.newTime.hours}></input>:
-        <input value={state.newTime.minutes}></input>:
-        <input value={state.newTime.seconds}></input>,
-        <input value={state.newTime.month}></input>
-        <input value={state.newTime.day}></input>,
-        <input value={state.newTime.year}></input>
-        <p>when</p>
-        <input value={state.newTime.event}></input>
-        <p>occurs</p>
-        <button onclick={toDisplay}>Count!</button>
+        <p>Time:</p>
+        <input size="2" value={state.newTime.hours}></input>:
+        <input size="2" value={state.newTime.minutes}></input>:
+        <input size="2" value={state.newTime.seconds}></input>,
+        &nbsp;
+        <input size="2" value={state.newTime.month}></input> &nbsp;
+        <input size="2" value={state.newTime.day}></input>, &nbsp;
+        <input size="4" value={state.newTime.year}></input>
+        <p>Event (nouns look best):</p>
+        <input size="50" value={state.newTime.event}></input>
+        <p><button onclick={toDisplay}>Count!</button></p>
     </div>
 );
 
