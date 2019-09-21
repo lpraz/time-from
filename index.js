@@ -65,8 +65,12 @@ const Display = state => {
     const displayUnit = (amount, unit) => If(amount > 0, (
         <p><strong>{amount}</strong> {unit}{amount > 1 ? "s" : ""}</p>
     ));
-
+    
     let diff = diffTime(state.currentTime, state.targetTime);
+    let permalinkUri = window.location +
+            "?time=" + state.targetTime +
+            "&event=" + state.event;
+
     return (
         <div>
             {displayUnit(diff.years, "year")}
@@ -75,6 +79,7 @@ const Display = state => {
             {displayUnit(diff.minutes, "minute")}
             {displayUnit(diff.seconds, "second")}
             <p>{diff.count == "down" ? "until" : "since"} {state.event}</p>
+            <a href={permalinkUri}>Permalink</a>
         </div>
     )
 };
@@ -91,7 +96,7 @@ const Create = state => (
         <input value={state.newTime.day}></input>,
         <input value={state.newTime.year}></input>
         <p>when</p>
-        <textarea value={state.newTime.event}></textarea>
+        <input value={state.newTime.event}></input>
         <p>occurs</p>
         <button onclick={toDisplay}>Count!</button>
     </div>
@@ -108,7 +113,8 @@ app({
             day: new Date().getUTCDate(),
             hours: new Date().getUTCHours(),
             minutes: new Date().getUTCMinutes(),
-            seconds: new Date().getUTCSeconds()
+            seconds: new Date().getUTCSeconds(),
+            event: ""
         }
     }),
     view: state => state.targetTime === null ? Create(state) : Display(state),
