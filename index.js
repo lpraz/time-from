@@ -1,5 +1,6 @@
 import { h, app } from "hyperapp"
 import { interval } from "@hyperapp/time"
+import { HistoryPush } from "hyperapp-fx"
 
 const getQueryParams = () =>
     new URLSearchParams(window.location.search.substr(1));
@@ -20,7 +21,7 @@ const SetFromOnInput = prop => [
     event => event.target.value
 ];
 
-// TODO: leap years, seconds, etc.?
+// TODO: leap years, seconds, etc.? (library?)
 const diffTime = (src, dest) => {
     const per = (before, after) => {
         const factors = [1000, 60, 60, 24, 365];
@@ -48,17 +49,30 @@ const diffTime = (src, dest) => {
     return { count, years, days, hours, minutes, seconds };
 };
 
-const toDisplay = state => ({
-    currentTime: Date.now(),
-    targetTime: Date.UTC(
+const permalinkUri = (time, event) =>
+    window.location + "?time=" + time + "&event=" + event;
+
+const toDisplay = state => {
+    let targetTime = Date.UTC(
         state.newTime.year,
         state.newTime.month - 1,
         state.newTime.day,
         state.newTime.hours,
         state.newTime.minutes,
-        state.newTime.seconds),
-    event: state.newTime.event
-});
+        state.newTime.seconds);
+        
+    return [
+        {
+            currentTime: Date.now(),
+            targetTime: targetTime,
+            event: state.newTime.event
+        },
+        HistoryPush({
+            state,
+            url: permalinkUri(targetTime, state.newTime.event)
+        })
+    ];
+};
 
 const Tick = (state, time) => ({
     ...state,
@@ -73,9 +87,6 @@ const Display = state => {
     ));
     
     let diff = diffTime(state.currentTime, state.targetTime);
-    let permalinkUri = window.location +
-            "?time=" + state.targetTime +
-            "&event=" + state.event;
 
     return (
         <div>
@@ -86,7 +97,7 @@ const Display = state => {
             {displayUnit(diff.minutes, "minute")}
             {displayUnit(diff.seconds, "second")}
             <p>{diff.count == "down" ? "until" : "since"} {state.event}</p>
-            <a href={permalinkUri}>Permalink</a>
+            <a href={permalinkUri(state.targetTime, state.event)}>Permalink</a>
         </div>
     )
 };
@@ -139,6 +150,7 @@ const Create = state => (
     </div>
 );
 
+// TODO: get current time from effect
 app({
     init: () => ({
         currentTime: Date.now(),
