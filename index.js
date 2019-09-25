@@ -4,6 +4,22 @@ import { interval } from "@hyperapp/time"
 const getQueryParams = () =>
     new URLSearchParams(window.location.search.substr(1));
 
+const SetFromOnInput = prop => [
+    (state, value) => {
+        const inner = (obj, prop, value) => {
+            let newObj = { ...obj };
+            if (prop.length == 1)
+                newObj[prop[0]] = value;
+            else
+                newObj[prop[0]] = inner(obj[prop[0]], prop.slice(1), value);
+                
+            return newObj;
+        };
+        return inner(state, prop.split('.'), value);
+    },
+    event => event.target.value
+];
+
 // TODO: leap years, seconds, etc.?
 const diffTime = (src, dest) => {
     const diffUnit = (later, earlier, factor) => 
@@ -87,21 +103,48 @@ const Display = state => {
 
 // TODO: UTC/local selection
 // TODO: 12h/24h selection
-// TODO: fix state.newTime.* binding
 // TODO: left-pad numbers (16:3:5 => 16:03:05)
 // TODO: month <select>
 const Create = state => (
     <div>
         <p>Time:</p>
-        <input size="2" value={state.newTime.hours}></input>:
-        <input size="2" value={state.newTime.minutes}></input>:
-        <input size="2" value={state.newTime.seconds}></input>,
+        <input
+            type="text"
+            size="2"
+            value={state.newTime.hours}
+            oninput={SetFromOnInput("newTime.hours")} />:
+        <input
+            type="text"
+            size="2"
+            value={state.newTime.minutes}
+            oninput={SetFromOnInput("newTime.minutes")} />:
+        <input
+            type="text"
+            size="2"
+            value={state.newTime.seconds}
+            oninput={SetFromOnInput("newTime.seconds")} />,
         &nbsp;
-        <input size="2" value={state.newTime.month}></input> &nbsp;
-        <input size="2" value={state.newTime.day}></input>, &nbsp;
-        <input size="4" value={state.newTime.year}></input>
+        <input
+            type="text"
+            size="2"
+            value={state.newTime.month}
+            oninput={SetFromOnInput("newTime.month")} /> &nbsp;
+        <input
+            type="text"
+            size="2"
+            value={state.newTime.day}
+            oninput={SetFromOnInput("newTime.day")} />, &nbsp;
+        <input
+            type="text"
+            size="4"
+            value={state.newTime.year}
+            oninput={SetFromOnInput("newTime.year")} />
         <p>Event (nouns look best):</p>
-        <input size="50" value={state.newTime.event}></input>
+        <input
+            type="text"
+            size="50"
+            value={state.newTime.event}
+            oninput={SetFromOnInput("newTime.event")} />
         <p><button onclick={toDisplay}>Count!</button></p>
     </div>
 );
