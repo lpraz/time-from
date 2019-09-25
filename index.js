@@ -22,13 +22,6 @@ const SetFromOnInput = prop => [
 
 // TODO: leap years, seconds, etc.?
 const diffTime = (src, dest) => {
-    const diffUnit = (later, earlier, factor) => 
-        Math.floor(later / factor - earlier / factor);
-    
-    const subtractHigherUnit = (lower, higher, factor) => higher === 0 ?
-        lower :
-        lower % factor;
-
     const per = (before, after) => {
         const factors = [1000, 60, 60, 24, 365];
         const units = ["ms", "s", "m", "h", "d", "y"];
@@ -39,21 +32,18 @@ const diffTime = (src, dest) => {
 
     let earlier = src > dest ? dest : src;
     let later = src > dest ? src : dest;
+    let diff = later - earlier;
 
     let count = src > dest ? "up" : "down";
-    let years = diffUnit(later, earlier, per("ms", "y"));
-    let days = subtractHigherUnit(
-        diffUnit(later, earlier, per("ms", "d")),
-        years, per("d", "y"));
-    let hours = subtractHigherUnit(
-        diffUnit(later, earlier, per("ms", "h")),
-        days, per("h", "d"));
-    let minutes = subtractHigherUnit(
-        diffUnit(later, earlier, per("ms", "m")),
-        hours, per("m", "h"));
-    let seconds = subtractHigherUnit(
-        diffUnit(later, earlier, per("ms", "s")),
-        minutes, per("s", "m"));
+    let years = Math.floor(diff / per("ms", "y"));
+    let yearsRemainder = diff % per("ms", "y");
+    let days = Math.floor(yearsRemainder / per("ms", "d"));
+    let daysRemainder = yearsRemainder % per("ms", "d");
+    let hours = Math.floor(daysRemainder / per("ms", "h"));
+    let hoursRemainder = daysRemainder % per("ms", "h");
+    let minutes = Math.floor(hoursRemainder / per("ms", "m"));
+    let minutesRemainder = hoursRemainder % per("ms", "m");
+    let seconds = Math.floor(minutesRemainder / per("ms", "s"));
     
     return { count, years, days, hours, minutes, seconds };
 };
