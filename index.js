@@ -49,8 +49,11 @@ const diffTime = (src, dest) => {
     return { count, years, days, hours, minutes, seconds };
 };
 
+const pathWithoutQuery = () =>
+    `${location.protocol}//${location.host}${location.pathname}`;
+
 const permalinkUri = (time, event) =>
-    window.location + "?time=" + time + "&event=" + event;
+    `${pathWithoutQuery()}?time=${time}&event=${event}`;
 
 const toDisplay = state => {
     let targetTime = Date.UTC(
@@ -97,7 +100,16 @@ const Display = state => {
             {displayUnit(diff.minutes, "minute")}
             {displayUnit(diff.seconds, "second")}
             <p>{diff.count == "down" ? "until" : "since"} {state.event}</p>
-            <a href={permalinkUri(state.targetTime, state.event)}>Permalink</a>
+            <p>
+                <a href={permalinkUri(state.targetTime, state.event)}>
+                    Permalink
+                </a>
+            </p>
+            <p>
+                <a href={pathWithoutQuery()}>
+                    Return
+                </a>
+            </p>
         </div>
     )
 };
