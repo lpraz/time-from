@@ -58,7 +58,7 @@ const permalinkUri = (time, event) =>
 const toDisplay = state => {
     let targetTime = Date.UTC(
         state.newTime.year,
-        state.newTime.month - 1,
+        parseInt(state.newTime.month),
         state.newTime.day,
         state.newTime.hours,
         state.newTime.minutes,
@@ -117,7 +117,6 @@ const Display = state => {
 // TODO: UTC/local selection
 // TODO: 12h/24h selection
 // TODO: left-pad numbers (16:3:5 => 16:03:05)
-// TODO: month <select>
 const Create = state => (
     <div>
         <p>Time:</p>
@@ -137,11 +136,21 @@ const Create = state => (
             value={state.newTime.seconds}
             oninput={SetFromOnInput("newTime.seconds")} />,
         &nbsp;
-        <input
-            type="text"
-            size="2"
-            value={state.newTime.month}
-            oninput={SetFromOnInput("newTime.month")} /> &nbsp;
+        <select value={state.newTime.month}
+            onchange={SetFromOnInput("newTime.month")}>
+            <option value="0" selected={state.newTime.month == 0}>January</option>
+            <option value="1" selected={state.newTime.month == 1}>February</option>
+            <option value="2" selected={state.newTime.month == 2}>March</option>
+            <option value="3" selected={state.newTime.month == 3}>April</option>
+            <option value="4" selected={state.newTime.month == 4}>May</option>
+            <option value="5" selected={state.newTime.month == 5}>June</option>
+            <option value="6" selected={state.newTime.month == 6}>July</option>
+            <option value="7" selected={state.newTime.month == 7}>August</option>
+            <option value="8" selected={state.newTime.month == 8}>September</option>
+            <option value="9" selected={state.newTime.month == 9}>October</option>
+            <option value="10" selected={state.newTime.month == 10}>November</option>
+            <option value="11" selected={state.newTime.month == 11}>December</option>
+        </select>
         <input
             type="text"
             size="2"
@@ -152,7 +161,7 @@ const Create = state => (
             size="4"
             value={state.newTime.year}
             oninput={SetFromOnInput("newTime.year")} />
-        <p>Event (nouns look best):</p>
+        <p>Event:</p>
         <input
             type="text"
             size="50"
@@ -170,7 +179,7 @@ app({
         event: getQueryParams().get("event"),
         newTime: {
             year: new Date().getUTCFullYear(),
-            month: new Date().getUTCMonth() + 1,
+            month: new Date().getUTCMonth(),
             day: new Date().getUTCDate(),
             hours: new Date().getUTCHours(),
             minutes: new Date().getUTCMinutes(),
