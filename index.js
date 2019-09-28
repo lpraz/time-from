@@ -2,6 +2,23 @@ import { h, app } from "hyperapp"
 import { interval } from "@hyperapp/time"
 import { HistoryPush } from "hyperapp-fx"
 
+const periods = ["AM", "PM", "24h"];
+
+const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+];
+
 const getQueryParams = () =>
     new URLSearchParams(window.location.search.substr(1));
 
@@ -55,12 +72,15 @@ const pathWithoutQuery = () =>
 const permalinkUri = (time, event) =>
     `${pathWithoutQuery()}?time=${time}&event=${event}`;
 
+// TODO: validation
 const toDisplay = state => {
     let targetTime = Date.UTC(
         state.newTime.year,
         parseInt(state.newTime.month),
         state.newTime.day,
-        state.newTime.hours,
+        parseInt(state.newTime.period) === periods.indexOf("PM") ?
+            state.newTime.hours + 12 :
+            state.newTime.hours,
         state.newTime.minutes,
         state.newTime.seconds);
         
@@ -115,7 +135,6 @@ const Display = state => {
 };
 
 // TODO: UTC/local selection
-// TODO: 12h/24h selection
 // TODO: left-pad numbers (16:3:5 => 16:03:05)
 const Create = state => (
     <div>
@@ -134,22 +153,23 @@ const Create = state => (
             type="text"
             size="2"
             value={state.newTime.seconds}
-            oninput={SetFromOnInput("newTime.seconds")} />,
+            oninput={SetFromOnInput("newTime.seconds")} />
+        <select value={state.newTime.period}
+            onChange={SetFromOnInput("newTime.period")}>
+            {periods.map((desc, val) => (
+                <option value={val} selected={state.newTime.period == val}>
+                    {desc}
+                </option>
+            ))}
+        </select>
         &nbsp;
         <select value={state.newTime.month}
             onchange={SetFromOnInput("newTime.month")}>
-            <option value="0" selected={state.newTime.month == 0}>January</option>
-            <option value="1" selected={state.newTime.month == 1}>February</option>
-            <option value="2" selected={state.newTime.month == 2}>March</option>
-            <option value="3" selected={state.newTime.month == 3}>April</option>
-            <option value="4" selected={state.newTime.month == 4}>May</option>
-            <option value="5" selected={state.newTime.month == 5}>June</option>
-            <option value="6" selected={state.newTime.month == 6}>July</option>
-            <option value="7" selected={state.newTime.month == 7}>August</option>
-            <option value="8" selected={state.newTime.month == 8}>September</option>
-            <option value="9" selected={state.newTime.month == 9}>October</option>
-            <option value="10" selected={state.newTime.month == 10}>November</option>
-            <option value="11" selected={state.newTime.month == 11}>December</option>
+            {months.map((desc, val) => (
+                <option value={val} selected={state.newTime.month == val}>
+                    {desc}
+                </option>
+            ))}
         </select>
         <input
             type="text"
@@ -184,6 +204,7 @@ app({
             hours: new Date().getUTCHours(),
             minutes: new Date().getUTCMinutes(),
             seconds: new Date().getUTCSeconds(),
+            period: periods.indexOf("24h"),
             event: ""
         }
     }),
