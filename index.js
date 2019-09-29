@@ -2,25 +2,12 @@ import { h, app } from "hyperapp"
 import { interval } from "@hyperapp/time"
 import { HistoryPush } from "hyperapp-fx"
 
-const periods = ["AM", "PM", "24h"];
-
-const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-];
-
 const getQueryParams = () =>
     new URLSearchParams(window.location.search.substr(1));
+
+const getDateFromDateTime = date => date.toISOString().slice(0, 10);
+
+const getTimeFromDateTime = date => date.toISOString().slice(11, 19);
 
 const SetFromOnInput = prop => [
     (state, value) => {
@@ -35,6 +22,17 @@ const SetFromOnInput = prop => [
         };
         return inner(state, prop.split('.'), value);
     },
+    event => event.target.value
+];
+
+const SetIsInUtc = value => [
+    state => ({
+        ...state,
+        newTime: {
+            ...state.newTime,
+            isInUtc: value
+        }
+    }),
     event => event.target.value
 ];
 
@@ -72,18 +70,12 @@ const pathWithoutQuery = () =>
 const permalinkUri = (time, event) =>
     `${pathWithoutQuery()}?time=${time}&event=${event}`;
 
-// TODO: validation
 const toDisplay = state => {
-    let targetTime = Date.UTC(
-        state.newTime.year,
-        parseInt(state.newTime.month),
-        state.newTime.day,
-        parseInt(state.newTime.period) === periods.indexOf("PM") ?
-            state.newTime.hours + 12 :
-            state.newTime.hours,
-        state.newTime.minutes,
-        state.newTime.seconds);
-        
+    let targetTime = new Date(
+        `${state.newTime.date}T${state.newTime.time}` +
+            (state.newTime.isInUtc ? "Z" : "")
+    );
+    
     return [
         {
             currentTime: Date.now(),
@@ -134,57 +126,42 @@ const Display = state => {
     )
 };
 
-// TODO: UTC/local selection
-// TODO: left-pad numbers (16:3:5 => 16:03:05)
+// Separate date/time inputs for Firefox compatibility
 const Create = state => (
     <div>
         <p>Time:</p>
-        <input
-            type="text"
-            size="2"
-            value={state.newTime.hours}
-            oninput={SetFromOnInput("newTime.hours")} />:
-        <input
-            type="text"
-            size="2"
-            value={state.newTime.minutes}
-            oninput={SetFromOnInput("newTime.minutes")} />:
-        <input
-            type="text"
-            size="2"
-            value={state.newTime.seconds}
-            oninput={SetFromOnInput("newTime.seconds")} />
-        <select value={state.newTime.period}
-            onChange={SetFromOnInput("newTime.period")}>
-            {periods.map((desc, val) => (
-                <option value={val} selected={state.newTime.period == val}>
-                    {desc}
-                </option>
-            ))}
-        </select>
-        &nbsp;
-        <select value={state.newTime.month}
-            onchange={SetFromOnInput("newTime.month")}>
-            {months.map((desc, val) => (
-                <option value={val} selected={state.newTime.month == val}>
-                    {desc}
-                </option>
-            ))}
-        </select>
-        <input
-            type="text"
-            size="2"
-            value={state.newTime.day}
-            oninput={SetFromOnInput("newTime.day")} />, &nbsp;
-        <input
-            type="text"
-            size="4"
-            value={state.newTime.year}
-            oninput={SetFromOnInput("newTime.year")} />
+        <p>
+            <input
+                type="date"
+                value={state.newTime.date}
+                oninput={SetFromOnInput("newTime.date")} />
+            <input
+                type="time"
+                step="1"
+                value={state.newTime.time}
+                oninput={SetFromOnInput("newTime.time")} />
+        </p>
+        <p>
+            <input
+                id="local"
+                type="radio"
+                name="timeZone"
+                value="local"
+                checked={!state.newTime.isInUtc}
+                onchange={SetIsInUtc(false)} />
+            <label for="local">Local time</label>
+            <input
+                id="utc"
+                type="radio"
+                name="timeZone"
+                value="utc"
+                checked={state.newTime.isInUtc}
+                onchange={SetIsInUtc(true)} />
+            <label for="utc">UTC</label>
+        </p>
         <p>Event:</p>
         <input
             type="text"
-            size="50"
             value={state.newTime.event}
             oninput={SetFromOnInput("newTime.event")} />
         <p><button onclick={toDisplay}>Count!</button></p>
@@ -198,13 +175,9 @@ app({
         targetTime: getQueryParams().get("time"),
         event: getQueryParams().get("event"),
         newTime: {
-            year: new Date().getUTCFullYear(),
-            month: new Date().getUTCMonth(),
-            day: new Date().getUTCDate(),
-            hours: new Date().getUTCHours(),
-            minutes: new Date().getUTCMinutes(),
-            seconds: new Date().getUTCSeconds(),
-            period: periods.indexOf("24h"),
+            date: getDateFromDateTime(new Date()),
+            time: getTimeFromDateTime(new Date()),
+            isInUtc: true,
             event: ""
         }
     }),
