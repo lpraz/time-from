@@ -9,21 +9,18 @@ const getDateFromDateTime = date => date.toISOString().slice(0, 10);
 
 const getTimeFromDateTime = date => date.toISOString().slice(11, 19);
 
-const SetFromOnInput = prop => [
-    (state, value) => {
-        const inner = (obj, prop, value) => {
-            let newObj = { ...obj };
-            if (prop.length == 1)
-                newObj[prop[0]] = value;
-            else
-                newObj[prop[0]] = inner(obj[prop[0]], prop.slice(1), value);
-                
-            return newObj;
-        };
-        return inner(state, prop.split('.'), value);
-    },
-    event => event.target.value
-];
+const SetFromOnInput = prop => (state, event) => {
+    const inner = (obj, prop, value) => {
+        let newObj = { ...obj };
+        if (prop.length == 1)
+            newObj[prop[0]] = value;
+        else
+            newObj[prop[0]] = inner(obj[prop[0]], prop.slice(1), value);
+            
+        return newObj;
+    };
+    return inner(state, prop.split('.'), event.target.value);
+};
 
 const SetIsInUtc = value => [
     state => ({
